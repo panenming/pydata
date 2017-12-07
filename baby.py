@@ -43,3 +43,32 @@ names = names.groupby(['year','sex']).apply(add_prop)
 #有效性检查，检查所有分组的prop总和是否为1
 assert np.allclose(names.groupby(['year','sex']).prop.sum(),1) == True
 
+#取出数据的子集：每对sex/year组合的前1000个名字
+def get_top1000(group):
+    return group.sort_values(by='births',ascending=False)[:1000]
+
+grouped = names.groupby(['year','sex'])
+top1000 = grouped.apply(get_top1000)
+#print(top1000)
+
+#根据这个top1000数据进行分析命名趋势等
+#先将top1000按照男女分为两部分
+boys = top1000[top1000.sex == 'M']
+girls = top1000[top1000.sex == 'F']
+#生成一张按照year和name统计的总的出生数表
+total_births = top1000.pivot_table('births',index='year',columns='name',aggfunc=sum)
+#print(total_births)
+
+#绘制几个名字的曲线(title中文的问题)
+subset = total_births[['John','Harry','Mary','Marilyn']]
+subset.plot(subplots=True,figsize=(12,10),grid=False)
+#pylab.title(u'这几个名字每年出生的数量', fontproperties='SimHei')
+#pylab.show()
+
+#是否最流行的几个名字越来越不被家长采用呢，我们使用计算最流行的1000个名字所占比例的方式，按year和sex进行聚合并绘图
+table = top1000.pivot_table('prop',index='year',columns='sex',aggfunc=sum)
+table.plot()
+pylab.title(u'1000个流行名字所占的比例', fontproperties='SimHei')
+pylab.show()
+
+
