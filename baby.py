@@ -66,9 +66,72 @@ subset.plot(subplots=True,figsize=(12,10),grid=False)
 #pylab.show()
 
 #是否最流行的几个名字越来越不被家长采用呢，我们使用计算最流行的1000个名字所占比例的方式，按year和sex进行聚合并绘图
+#名字的多样性在提升
 table = top1000.pivot_table('prop',index='year',columns='sex',aggfunc=sum)
-table.plot()
+table.plot(yticks=np.linspace(0,1.2,13),xticks=range(1880,2020,10))
 pylab.title(u'1000个流行名字所占的比例', fontproperties='SimHei')
-pylab.show()
+#pylab.show()
+
+#方法二 计算占总出生人数前50%的不同名字的数量，我们只考虑2010年男孩的名字
+
+df = boys[boys.year == 2010]
+#print(df)
+#对prop降序排列后，求的多少个名字加起来才够50%,索引结果要加个1
+prop_cumsum = df.sort_values(by='prop',ascending=False).prop.cumsum()
+#print(prop_cumsum.searchsorted(0.5))
+
+#拿1900年数据做个对比，数字会小很多
+df = boys[boys.year == 1900]
+in1900 = df.sort_values(by='prop',ascending=False).prop.cumsum()
+#print(in1900.searchsorted(0.5) + 1)
+
+#对所有的year/sex组合执行这个计算
+def get_quantile_count(group,q=0.5):
+    group = group.sort_values(by='prop',ascending=False)
+    return group.prop.cumsum().searchsorted(q) + 1
+
+diversity = top1000.groupby(['year','sex']).apply(get_quantile_count)
+diversity = diversity.unstack('sex').astype(float)
+#print(diversity.head())
+#可以看出女孩名字的多样性高于男孩，而且变得越来越高
+diversity.plot(title='Number of popular names in top 50%')
+#pylab.show()
+
+#最后一个字母的变革
+#男孩女孩名字中各个末字母的比例
+get_last_letter = lambda x:x[-1]
+last_letters = names.name.map(get_last_letter)
+last_letters.name = 'last_letter'
+
+table = names.pivot_table('births',index=last_letters,columns=['sex','year'],aggfunc=sum)
+subtable = table.reindex(columns=[1910,1960,2010],level='year')
+#print(subtable.head())
+letter_prop = subtable / subtable.sum().astype(float)
+fig,axes = pylab.subplots(2,1,figsize=(10,8))
+letter_prop['M'].plot(kind='bar',rot=0,ax=axes[0],title='Male')
+letter_prop['F'].plot(kind='bar',rot=0,ax=axes[1],title='Female',legend=False)
+#pylab.show()
+#回到以前创建的那个完整的表，按照年度和性别对其进行规范化处理，并在男孩的名字中选取几个字母，最后进行转置以便将各个列做成一个时间序列
+#各个年代的男孩名字以d/n/y结尾的比例曲线
+letter_prop = table / table.sum().astype(float)
+dny_ts = letter_prop.ix[['d','n','y'],'M'].T
+dny_ts.plot()
+#pylab.show()
+
+#变成女孩名字的男孩名字（以及相反的情况）(以lesl为例)
+all_names = top1000.name.unique()
+mask = np.array(['lesl' in x.lower() for x in all_names])
+lesley_like = all_names[mask]
+
+filtered = top1000[top1000.name.isin(lesley_like)]
+filtered.groupby('name').births.sum()
+table = filtered.pivot_table('births',index='year',columns='sex',aggfunc=sum)
+table = table.div(table.sum(1),axis=0)
+table.plot(style={'M':'k-','F':'k--'})
+#pylab.show()
+
+
+
+
 
 
