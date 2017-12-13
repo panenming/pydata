@@ -12,7 +12,7 @@
     basemap‑1.1.0‑cp36‑cp36m‑win_amd64.whl
     pyproj‑1.9.5.1‑cp36‑cp36m‑win_amd64.whl
 3. 打开命令提示符，将当前目录设置为下载文件所在的目录
-4. 安装pyproj和basemap
+4. 安装pyproj和basemap：
     pip install pyproj‑1.9.5.1‑cp36‑cp36m‑win_amd64.whl
     pyproj安装好之后继续安装basemap：
     pip install basemap‑1.1.0‑cp36‑cp36m‑win_amd64.whl
