@@ -4,6 +4,7 @@
 2. pylab
 3. numpy
 4. basemap（map这个工程需要用到）
+
 着重说一下basemap的安装
 (1)确认电脑有pip；
 (2)下载pyproj和basemap
