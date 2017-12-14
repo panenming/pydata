@@ -100,4 +100,5 @@ percent = totals.div(totals.sum(1),axis=0)
 #print(percent)
 percent.plot(kind='barh')
 
+
 #plt.show()
